@@ -2,13 +2,11 @@
 using System.Windows.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using System.IO;
-using ManagedCommon;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using PowerToys_Run_Huh.types;
-using static System.Net.Mime.MediaTypeNames;
 
 // ReSharper disable SuggestVarOrType_Elsewhere
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -23,6 +21,8 @@ using static System.Net.Mime.MediaTypeNames;
 namespace PowerToys_Run_Huh;
 public class Main : IPlugin, IContextMenu, ISettingProvider
 {
+    private const int MaxScore = Int32.MaxValue-1000;
+    private const string EndChar = "§";
     public static string PluginID => "KC0B1WNT80BXS3FKWOQPYRXRU8QHJKB6";
     public string Name => "Huh";
     public string Description => "HUH?!?!?.";
@@ -30,7 +30,8 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
     internal string? Model { get; private set; }
     internal string? Instruction { get; private set; }
     private string ImageDirectory  => "images/";
-
+    private Action<string> Requery;
+    private Action<string> ShowText;
 
     IEnumerable <PluginAdditionalOption> ISettingProvider.AdditionalOptions => new List<PluginAdditionalOption>()
     {
@@ -62,6 +63,8 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
 
     public void Init(PluginInitContext context)
     {
+        Requery = query => context.API.ChangeQuery(query, true);
+        ShowText = text => context.API.ChangeQuery(text, false);
     }
 
     public Control CreateSettingPanel() => throw new NotImplementedException();
@@ -89,24 +92,33 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
 
     public List<Result> Query(Query query)
     {
-        if (!query.RawQuery.EndsWith('.'))
+        var results = new List<Result>();
+        var message = query.RawQuery.EndsWith(EndChar) ? query.RawQuery[..^1] : query.RawQuery;
+        results.Add(new Result
         {
-            return
-            [
-                new Result
-                {
-                    Title = "Waiting for message completion...",
-                    SubTitle = "To complete the message, end it with a period (.)",
-                    IcoPath = Path.Combine(this.ImageDirectory, "question.png")
+            Title = message,
+            SubTitle = "Search using AI ",
+            IcoPath = Path.Combine(this.ImageDirectory, "ai.png"),
+            Score = MaxScore - 100,
+            Action = context =>
+            {
+                this.Requery(query.Search + EndChar);
+                this.ShowText("Searching...");
+                return false;
+            }
+        });
+
+        if (!query.RawQuery.EndsWith(EndChar))
+        {
+            return results;
         }
-            ];
-        }
-        
-        var message = query.RawQuery[..^1];
 
         var requestBody = new
         {
             model = this.Model,
+            temperature = 0.5,
+            presence_penalty = 0,
+            stream = false,
             messages = new[]
             {
                 new { role = "system", content = this.Instruction },
@@ -123,23 +135,11 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             "application/json"
         );
 
-        HttpResponseMessage response = client.PostAsync("http://localhost:8080/v1/chat/completions", content).GetAwaiter().GetResult();
-        if (!response.IsSuccessStatusCode)
-        {
-            return
-            [
-                new Result
-                {
-                    Title = "Error :(",
-                    SubTitle = $"LMAO Get fucked, failed with status code: {response.StatusCode} (Did you forget to run the container you headass)",
-                    IcoPath = Path.Combine(this.ImageDirectory, "question.png")
-                }
-            ];
-        }
-
         var result = new Result();
         try
         {
+            HttpResponseMessage response = client.PostAsync("http://localhost:8080/v1/chat/completions", content)
+                                                 .GetAwaiter().GetResult();
             var answer = response
                          .Content
                          .ReadFromJsonAsync<ChatCompletionResponse>()
@@ -147,22 +147,36 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
                          .GetResult()!
                          .Choices.Last().Message.Content;
 
-            result.SubTitle = answer;
+            int breakInterval = 105;
+            string formattedAnswer = answer.Length > breakInterval
+                ? string.Join(Environment.NewLine,
+                              Enumerable.Range(0, answer.Length / breakInterval)
+                                        .Select(i => answer.Substring(i * breakInterval, breakInterval)))
+                : answer;
+            result.Title = message;
+            result.SubTitle = formattedAnswer;
             result.FontFamily = "Consolas";
-            result.IcoPath = Path.Combine(this.ImageDirectory, "ai.png");
+            result.IcoPath = Path.Combine(this.ImageDirectory, "speak.png");
+            result.Score = MaxScore;
             result.Action = _ =>
             {
-                Task.Run(() => NotepadHelper.ShowMessage("ChadGPT response",answer));
+                Task.Run(() => NotepadHelper.ShowMessage("ChadGPT response", answer));
                 return true;
             };
         }
         catch (Exception e)
         {
             result.Title = "Error :(";
-            result.SubTitle = "Could not parse response correctly.";
+            result.SubTitle = e.Message;
             result.IcoPath = Path.Combine(this.ImageDirectory, "stop.png");
+            result.Score = MaxScore;
         }
-        return [result ];
+        finally
+        {
+            results.Add(result);
+        }
+
+        return results;
     }
 
     public List<ContextMenuResult> LoadContextMenus(Result result)

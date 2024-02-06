@@ -20,7 +20,7 @@ This is a plugin for [PowerToys](https://github.com/microsoft/PowerToys) Run tha
 > Spotify Premium is necessary to control the player.
 
 1. Ensure you have the latest version of PowerToys installed.
-2. Download the [newest release](https://github.com/waaverecords/PowerToys-Run-Spotify/releases) zip file.
+2. Download the [newest release](https://github.com/waaverecords/PowerToys-Run-Huh/releases) zip file.
 3. Extract the content of the zip file to the `RunPlugins` folder of your PowerToys' installation. Usually `C:\Program Files\PowerToys\RunPlugins`, or `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins`.
 4. Restart PowerToys.
 5. Head to your Spotify [developer dashboard](https://developer.spotify.com/).
@@ -51,7 +51,7 @@ Open PowerToys Run (default shortcut is ```Alt+Space```).
 
 Contributions are welcome! If you have any ideas, improvements, or bug fixes, please open an issue or submit a pull request.
 
-To contribute to PowerToys-Run-Spotify, follow these steps:
+To contribute to PowerToys-Run-Huh, follow these steps:
 
 1. Fork the repository.
 2. Create a new branch for your feature/fix.
@@ -61,7 +61,7 @@ To contribute to PowerToys-Run-Spotify, follow these steps:
 
 Please ensure that your code adheres to the existing code style. Also, make sure to update the documentation as needed.
 
-Together, we can make PowerToys-Run-Spotify better!
+Together, we can make PowerToys-Run-Huh better!
 
 ## Development
 

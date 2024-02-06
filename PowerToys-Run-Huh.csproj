@@ -2,18 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0-windows</TargetFramework>
-        <RootNamespace>PowerToys_Run_Spotify</RootNamespace>
+        <RootNamespace>PowerToys_Run_Huh</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <OutputType>Library</OutputType>
         <UseWpf>true</UseWpf>
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="SpotifyAPI.Web" Version="7.0.0" />
-        <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.0.0" />
-    </ItemGroup>
 
     <ItemGroup>
         <Reference Include="PowerToys.Common.UI">

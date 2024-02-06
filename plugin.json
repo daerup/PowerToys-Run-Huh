@@ -1,15 +1,15 @@
 {
-    "ID": "BX1Z634F30489859A3671B4FQ7Y07193",
-    "Disabled": false,
-    "ActionKeyword": "sp",
-    "Name": "Spotify",
-    "Author": "waaverecords",
-    "Version": "1.0.0",
-    "Language": "csharp",
-    "Website": "https://github.com/waaverecords/PowerToys-Run-Spotify",
-    "ExecuteFileName": "PowerToys-Run-Spotify.dll",
-    "IsGlobal": false,
-    "IcoPathDark": "images\\dark\\spotify.png",
-    "IcoPathLight": "images\\light\\spotify.png",
-    "DynamicLoading": true
+  "ID": "KC0B1WNT80BXS3FKWOQPYRXRU8QHJKB6",
+  "Disabled": false,
+  "ActionKeyword": "ask",
+  "Name": "Huh",
+  "Author": "Dario Portmann",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/daerup/PowerToys-Run-Huh",
+  "ExecuteFileName": "PowerToys-Run-Huh.dll",
+  "IsGlobal": true,
+  "IcoPathDark": "images\\ai.png",
+  "IcoPathLight": "images\\ai.png",
+  "DynamicLoading": true
 }

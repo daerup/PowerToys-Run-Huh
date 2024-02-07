@@ -6,7 +6,7 @@ namespace PowerToys_Run_Huh;
 public static class NotepadHelper
 {
 
-    public static void ShowMessage(string title = null, string message = null)
+    public static void Open(string message, string title = "ChadGPT response")
     {
         ProcessStartInfo psi = new ProcessStartInfo();
         psi.FileName = "notepad.exe";

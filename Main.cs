@@ -6,7 +6,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Windows;
 using PowerToys_Run_Huh.types;
+using System.Windows.Controls.Primitives;
+using Wox.Plugin.Common.Win32;
 
 // ReSharper disable SuggestVarOrType_Elsewhere
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -100,7 +103,8 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             SubTitle = "Search using AI ",
             IcoPath = Path.Combine(this.ImageDirectory, "ai.png"),
             Score = MaxScore - 100,
-            Action = context =>
+            ContextData = ContextData.Question,
+            Action = _ =>
             {
                 this.Requery(query.Search + EndChar);
                 this.ShowText("Searching...");
@@ -158,9 +162,10 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             result.FontFamily = "Consolas";
             result.IcoPath = Path.Combine(this.ImageDirectory, "speak.png");
             result.Score = MaxScore;
+            result.ContextData = ContextData.Answer;
             result.Action = _ =>
             {
-                Task.Run(() => NotepadHelper.ShowMessage("ChadGPT response", answer));
+                Clipboard.SetText(answer);
                 return true;
             };
         }
@@ -170,6 +175,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             result.SubTitle = e.Message;
             result.IcoPath = Path.Combine(this.ImageDirectory, "stop.png");
             result.Score = MaxScore;
+            result.ContextData = ContextData.Error;
         }
         finally
         {
@@ -182,6 +188,36 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
     public List<ContextMenuResult> LoadContextMenus(Result result)
     {
         var results = new List<ContextMenuResult>();
+        
+        var contextData = result.ContextData as ContextData? ?? ContextData.Error;
+
+        if (contextData != ContextData.Answer)
+        {
+            return results;
+        }
+
+        results.Add(new ContextMenuResult
+        {
+            Title = "Copy to clipboard",
+            Glyph = "\xE8C8",
+            FontFamily = "Segoe MDL2 Assets",
+            Action = _ =>
+            {
+                Clipboard.SetText(result.SubTitle);
+                return true;
+            }
+        }); 
+        results.Add(new ContextMenuResult
+        {
+            Title = "Open in Notepad",
+            Glyph = "\xE8E5",
+            FontFamily = "Segoe MDL2 Assets",
+            Action = _ =>
+            {
+                Task.Run(() => NotepadHelper.Open(result.SubTitle));
+                return true;
+            }
+        });
         return results;
     }
 }

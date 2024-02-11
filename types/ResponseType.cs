@@ -5,9 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PowerToys_Run_Huh.types;
-internal enum ContextData
+internal enum ResponseType
 {
     Question,
     Answer,
     Error
+}
+internal record ContextData(ResponseType ResponseType, string? Message = null)
+{
 }

@@ -103,7 +103,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             SubTitle = "Search using AI ",
             IcoPath = Path.Combine(this.ImageDirectory, "ai.png"),
             Score = MaxScore - 100,
-            ContextData = ContextData.Question,
+            ContextData = new ContextData(ResponseType.Question),
             Action = _ =>
             {
                 this.Requery(query.Search + EndChar);
@@ -151,7 +151,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
                          .GetResult()!
                          .Choices.Last().Message.Content;
 
-            int breakInterval = 105;
+            int breakInterval = 100;
             string formattedAnswer = answer.Length > breakInterval
                 ? string.Join(Environment.NewLine,
                               Enumerable.Range(0, answer.Length / breakInterval)
@@ -162,7 +162,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             result.FontFamily = "Consolas";
             result.IcoPath = Path.Combine(this.ImageDirectory, "speak.png");
             result.Score = MaxScore;
-            result.ContextData = ContextData.Answer;
+            result.ContextData = new ContextData(ResponseType.Answer, answer);
             result.Action = _ =>
             {
                 Clipboard.SetText(answer);
@@ -175,7 +175,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             result.SubTitle = e.Message;
             result.IcoPath = Path.Combine(this.ImageDirectory, "stop.png");
             result.Score = MaxScore;
-            result.ContextData = ContextData.Error;
+            result.ContextData = new ContextData(ResponseType.Error);
         }
         finally
         {
@@ -189,13 +189,13 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
     {
         var results = new List<ContextMenuResult>();
         
-        var contextData = result.ContextData as ContextData? ?? ContextData.Error;
+        var contextData = result.ContextData as ContextData;
 
-        if (contextData != ContextData.Answer)
+        if (contextData?.ResponseType != ResponseType.Answer )
         {
             return results;
         }
-
+        string message = contextData.Message ?? result.SubTitle;
         results.Add(new ContextMenuResult
         {
             Title = "Copy to clipboard",
@@ -203,7 +203,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             FontFamily = "Segoe MDL2 Assets",
             Action = _ =>
             {
-                Clipboard.SetText(result.SubTitle);
+                Clipboard.SetText(message);
                 return true;
             }
         }); 
@@ -214,7 +214,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             FontFamily = "Segoe MDL2 Assets",
             Action = _ =>
             {
-                Task.Run(() => NotepadHelper.Open(result.SubTitle));
+                Task.Run(() => NotepadHelper.Open(message));
                 return true;
             }
         });
